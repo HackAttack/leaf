@@ -35,6 +35,14 @@ pub(super) fn render_content_panel(f: &mut Frame, app: &mut App, area: Rect) {
     let visible_end = (scroll + viewport_height).min(app.total());
     let mut visible_lines = app.visible_lines(scroll, visible_end).to_vec();
 
+    for &row in app.search_matches() {
+        if Some(row) != active_highlight_line && (scroll..visible_end).contains(&row) {
+            let line = &mut visible_lines[row - scroll];
+            *line =
+                crate::markdown::highlight_matches_only(line, &theme.markdown, app.search_query());
+        }
+    }
+
     if let Some(line_idx) = active_highlight_line {
         if (scroll..visible_end).contains(&line_idx) {
             if let Some((_, highlighted_line)) = app.highlighted_line_cache() {

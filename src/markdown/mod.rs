@@ -16,7 +16,7 @@ pub(crate) mod toc;
 pub(crate) mod width;
 mod wrapping;
 
-pub(crate) use highlight::highlight_line;
+pub(crate) use highlight::{highlight_line, highlight_matches_only};
 pub(crate) use links::{LinkId, LinkSpan};
 pub(crate) use syntax::resolve_syntax;
 use tables::{handle_table_event, start_table, TableBuf};

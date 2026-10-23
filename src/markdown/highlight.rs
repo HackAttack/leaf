@@ -54,7 +54,15 @@ fn skip_ranges_ending_by(ranges: &[Range<usize>], index: &mut usize, pos: usize)
 }
 
 pub(crate) fn highlight_line<'a>(line: &Line<'a>, theme: &MarkdownTheme, query: &str) -> Line<'a> {
-    with_link_marker(|marker| highlight_line_with_marker(line, theme, query, marker))
+    with_link_marker(|marker| highlight_line_with_marker(line, theme, query, marker, false))
+}
+
+pub(crate) fn highlight_matches_only<'a>(
+    line: &Line<'a>,
+    theme: &MarkdownTheme,
+    query: &str,
+) -> Line<'a> {
+    with_link_marker(|marker| highlight_line_with_marker(line, theme, query, marker, true))
 }
 
 fn highlight_line_with_marker<'a>(
@@ -62,6 +70,7 @@ fn highlight_line_with_marker<'a>(
     theme: &MarkdownTheme,
     query: &str,
     marker: &str,
+    matches_only: bool,
 ) -> Line<'a> {
     let spans = &line.spans;
     let content_start = content_span_start(spans);
@@ -78,13 +87,24 @@ fn highlight_line_with_marker<'a>(
     }
 
     let line_bg = theme.search_highlight_bg;
-    let match_style_extra = Style::default()
-        .bg(theme.search_match_bg)
-        .add_modifier(Modifier::BOLD);
+    let match_style_extra = if matches_only {
+        Style::default().bg(line_bg).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default()
+            .bg(theme.search_match_bg)
+            .add_modifier(Modifier::BOLD)
+    };
+    let base_style_of = |span: &Span<'_>| {
+        if matches_only {
+            span.style
+        } else {
+            span.style.bg(line_bg)
+        }
+    };
     let mut result: Vec<Span<'a>> = Vec::with_capacity(spans.len());
 
     for span in &spans[..content_start] {
-        result.push(Span::styled(span.content.clone(), span.style.bg(line_bg)));
+        result.push(Span::styled(span.content.clone(), base_style_of(span)));
     }
 
     let mut char_offset: usize = 0;
@@ -96,7 +116,7 @@ fn highlight_line_with_marker<'a>(
         }
         let span_len = span.content.chars().count();
         let span_end = char_offset + span_len;
-        let base_style = span.style.bg(line_bg);
+        let base_style = base_style_of(span);
 
         skip_ranges_ending_by(&ranges, &mut range_index, char_offset);
         if ranges
