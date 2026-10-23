@@ -5,7 +5,7 @@ mod link_select_keys;
 mod mouse;
 
 use crate::{
-    app::{App, AppMode, FileChange, FLASH_DURATION_MS},
+    app::{App, AppMode, FileChange, COPY_HIGHLIGHT_DURATION_MS, FLASH_DURATION_MS},
     render::{ui, CONTENT_HORIZONTAL_PADDING, SCROLLBAR_WIDTH},
 };
 use anyhow::Result;
@@ -35,6 +35,7 @@ const CODE_BLOCK_FLASH_DURATION: Duration = Duration::from_millis(FLASH_DURATION
 const PATH_FLASH_DURATION: Duration = Duration::from_millis(FLASH_DURATION_MS);
 const PATH_COPY_FLASH_DURATION: Duration = Duration::from_millis(FLASH_DURATION_MS);
 const HISTORY_FLASH_DURATION: Duration = Duration::from_millis(FLASH_DURATION_MS);
+const COPY_HIGHLIGHT_DURATION: Duration = Duration::from_millis(COPY_HIGHLIGHT_DURATION_MS);
 const DOUBLE_CLICK_THRESHOLD: Duration = Duration::from_millis(400);
 const MOUSE_SCROLL_STEP: usize = 3;
 
@@ -179,6 +180,8 @@ pub(crate) fn run(
                 .and_then(|(_, started)| HISTORY_FLASH_DURATION.checked_sub(started.elapsed())),
             app.diff_flash()
                 .and_then(|(_, started)| FLASH_DURATION.checked_sub(started.elapsed())),
+            app.copy_highlight()
+                .and_then(|(_, started)| COPY_HIGHLIGHT_DURATION.checked_sub(started.elapsed())),
             resize_timeout,
         ]
         .into_iter()
@@ -345,6 +348,13 @@ pub(crate) fn run(
         if let Some((_, started)) = app.diff_flash() {
             if started.elapsed() >= FLASH_DURATION {
                 app.clear_diff_flash();
+                needs_redraw = true;
+            }
+        }
+
+        if let Some((_, started)) = app.copy_highlight() {
+            if started.elapsed() >= COPY_HIGHLIGHT_DURATION {
+                app.clear_copy_highlight();
                 needs_redraw = true;
             }
         }

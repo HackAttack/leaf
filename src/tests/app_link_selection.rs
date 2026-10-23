@@ -1,5 +1,6 @@
 use super::common::app_helpers::{
-    draw_app as draw, markdown_app, parse_markdown_for_test, sync_app_width as sync_width,
+    draw_app as draw, markdown_app, parse_markdown_for_test, status_text,
+    sync_app_width as sync_width,
 };
 use super::{lock_theme_test_state, test_assets};
 use crate::{
@@ -41,17 +42,6 @@ fn content_rows(buffer: &Buffer) -> Vec<String> {
                 .collect()
         })
         .collect()
-}
-
-fn status_text(buffer: &Buffer) -> String {
-    let mut text = String::new();
-    let mut x = 0;
-    while x < buffer.area.width {
-        let symbol = buffer[(x, buffer.area.height - 1)].symbol();
-        text.push_str(symbol);
-        x += ratatui::text::Span::raw(symbol).width().max(1) as u16;
-    }
-    text
 }
 
 fn is_letter_cell(buffer: &Buffer, x: u16, y: u16) -> bool {

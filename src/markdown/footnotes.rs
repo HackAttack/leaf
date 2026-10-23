@@ -23,6 +23,13 @@ pub(super) fn to_superscript(n: usize) -> String {
     n.to_string().chars().map(latex::to_superscript).collect()
 }
 
+pub(crate) fn is_footnote_number(text: &str) -> bool {
+    !text.is_empty()
+        && text
+            .chars()
+            .all(|c| ('0'..='9').any(|d| latex::to_superscript(d) == c))
+}
+
 pub(super) fn push_footnote_reference_span(
     spans: &mut Vec<LinkedSpan>,
     number: usize,

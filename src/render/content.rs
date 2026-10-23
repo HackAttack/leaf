@@ -1,6 +1,9 @@
 use crate::{
-    app::App,
-    markdown::{width::rendered_span_width, LinkId, LinkSpan},
+    app::{App, COPY_HIGHLIGHT_DURATION_MS},
+    markdown::{
+        width::{rendered_cluster_width, rendered_span_width},
+        LinkId, LinkSpan,
+    },
     theme::app_theme,
 };
 use ratatui::{
@@ -10,7 +13,8 @@ use ratatui::{
     widgets::{Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, Wrap},
     Frame,
 };
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
+use unicode_segmentation::UnicodeSegmentation;
 
 use super::{CONTENT_HORIZONTAL_PADDING, SCROLLBAR_WIDTH};
 
@@ -75,6 +79,21 @@ pub(super) fn render_content_panel(f: &mut Frame, app: &mut App, area: Rect) {
                 visible_end,
                 &theme.markdown,
             );
+        }
+    }
+
+    if let Some((ranges, started)) = app.copy_highlight() {
+        if started.elapsed() < Duration::from_millis(COPY_HIGHLIGHT_DURATION_MS) {
+            let style = Style::default().bg(theme.markdown.search_highlight_bg);
+            for range in ranges {
+                if let Some(line) = range
+                    .line_idx
+                    .checked_sub(scroll)
+                    .and_then(|idx| visible_lines.get_mut(idx))
+                {
+                    apply_column_range_style(line, range.start_col, range.end_col, style);
+                }
+            }
         }
     }
 
@@ -196,6 +215,52 @@ fn apply_code_block_highlight(
     }
 }
 
+fn apply_column_range_style(
+    line: &mut ratatui::text::Line<'static>,
+    start_col: usize,
+    end_col: usize,
+    style: Style,
+) {
+    let mut spans = Vec::with_capacity(line.spans.len() + 2);
+    let mut col = 0usize;
+    for span in line.spans.drain(..) {
+        let span_start = col;
+        col += rendered_span_width(&span);
+        if col <= start_col || span_start >= end_col {
+            spans.push(span);
+            continue;
+        }
+        if span_start >= start_col && col <= end_col {
+            spans.push(span.patch_style(style));
+            continue;
+        }
+        let mut parts = [String::new(), String::new(), String::new()];
+        let mut cluster_col = span_start;
+        for cluster in span.content.graphemes(true) {
+            let part = if cluster_col < start_col {
+                0
+            } else if cluster_col < end_col {
+                1
+            } else {
+                2
+            };
+            parts[part].push_str(cluster);
+            cluster_col += rendered_cluster_width(cluster);
+        }
+        let [before, inside, after] = parts;
+        for (text, part_style) in [
+            (before, span.style),
+            (inside, span.style.patch(style)),
+            (after, span.style),
+        ] {
+            if !text.is_empty() {
+                spans.push(Span::styled(text, part_style));
+            }
+        }
+    }
+    line.spans = spans;
+}
+
 fn style_link_occurrence(
     lines: &mut [ratatui::text::Line<'static>],
     spans_by_line: &HashMap<usize, Vec<LinkSpan>>,
@@ -206,26 +271,9 @@ fn style_link_occurrence(
     for (offset, line) in lines.iter_mut().enumerate() {
         if let Some(ranges) = spans_by_line.get(&(first_line + offset)) {
             for link in ranges.iter().filter(|link| link.link_id == id) {
-                apply_link_style(line, link.start_col, link.end_col, style);
+                apply_column_range_style(line, link.start_col, link.end_col, style);
             }
         }
-    }
-}
-
-fn apply_link_style(
-    line: &mut ratatui::text::Line<'static>,
-    start_col: usize,
-    end_col: usize,
-    style: Style,
-) {
-    let mut col = 0usize;
-    for span in &mut line.spans {
-        let w = rendered_span_width(span);
-        let span_end = col + w;
-        if span_end > start_col && col < end_col {
-            span.style = span.style.patch(style);
-        }
-        col = span_end;
     }
 }
 

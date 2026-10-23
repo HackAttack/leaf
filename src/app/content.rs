@@ -47,6 +47,7 @@ impl App {
         self.toc_header_line = toc_header_line();
         self.set_links(link_urls, link_spans);
         self.hovered_link = None;
+        self.copy_highlight = None;
         self.set_code_blocks(code_blocks);
         self.code_select = None;
         self.set_line_maps(line_number_map, source_line_map);

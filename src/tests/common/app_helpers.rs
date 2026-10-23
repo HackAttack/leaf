@@ -52,3 +52,14 @@ pub(crate) fn sync_app_width(app: &mut App, width: u16) {
     let themes = syntect::highlighting::ThemeSet::load_defaults();
     crate::runtime::sync_render_width_for_app(width, app, &ss, &themes);
 }
+
+pub(crate) fn status_text(buffer: &Buffer) -> String {
+    let mut text = String::new();
+    let mut x = 0;
+    while x < buffer.area.width {
+        let symbol = buffer[(x, buffer.area.height - 1)].symbol();
+        text.push_str(symbol);
+        x += ratatui::text::Span::raw(symbol).width().max(1) as u16;
+    }
+    text
+}

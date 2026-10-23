@@ -20,6 +20,7 @@ pub(crate) struct ScreenLink {
 pub(crate) struct ScreenGeometry {
     pub(crate) row_lines: Vec<usize>,
     pub(crate) links: Vec<ScreenLink>,
+    pub(crate) rows: Vec<Vec<Option<usize>>>,
 }
 
 pub(crate) fn screen_geometry(
@@ -60,11 +61,13 @@ pub(crate) fn screen_geometry(
     wrapped(probes).render(area, &mut buffer);
 
     for row in 0..geometry.row_lines.len() {
+        let mut line_cols = Vec::with_capacity(usize::from(width));
         let mut col = 0;
         while col < width {
             let cell = &buffer[(col, row as u16)];
             let end = width.min(col + cell.symbol().cell_width().max(1));
-            if let Some(span_idx) = link_index(cell.fg) {
+            line_cols.resize(usize::from(end), color_index(cell.bg));
+            if let Some(span_idx) = color_index(cell.fg) {
                 let (start_col, end_col) = (usize::from(col), usize::from(end));
                 match geometry.links.last_mut() {
                     Some(link)
@@ -84,6 +87,7 @@ pub(crate) fn screen_geometry(
             }
             col = end;
         }
+        geometry.rows.push(line_cols);
     }
     geometry
 }
@@ -103,8 +107,12 @@ fn probe_line<'a>(line: &'a Line<'_>, ranges: &[LinkSpan], gutter_width: usize) 
                 range.start_col + gutter_width <= start && start < range.end_col + gutter_width
             });
             let style = owner.map_or_else(Style::default, |index| {
-                Style::default().fg(link_color(index))
+                Style::default().fg(index_color(index))
             });
+            let style = match start.checked_sub(gutter_width) {
+                Some(line_col) => style.bg(index_color(line_col)),
+                None => style,
+            };
             Span::styled(grapheme.symbol, style)
         })
         .collect();
@@ -115,11 +123,11 @@ fn probe_line<'a>(line: &'a Line<'_>, ranges: &[LinkSpan], gutter_width: usize) 
     }
 }
 
-fn link_color(index: usize) -> Color {
+fn index_color(index: usize) -> Color {
     Color::Rgb((index >> 16) as u8, (index >> 8) as u8, index as u8)
 }
 
-fn link_index(color: Color) -> Option<usize> {
+fn color_index(color: Color) -> Option<usize> {
     match color {
         Color::Rgb(r, g, b) => Some(usize::from(r) << 16 | usize::from(g) << 8 | usize::from(b)),
         _ => None,

@@ -1,5 +1,5 @@
 use crate::{
-    app::{App, EditorFlash, PathKind},
+    app::{App, AppMode, EditorFlash, PathKind},
     clipboard::copy_to_clipboard,
     editor::{self, classify, open_in_editor, split_editor_cmd, EditorResult},
     render::{inner_content_area, SCROLLBAR_WIDTH},
@@ -175,21 +175,48 @@ pub(crate) fn handle_mouse_event_with(
                     scrollbar_scroll_to(app, mouse.row);
                     true
                 } else if is_double_click {
+                    let line_gesture = mouse
+                        .modifiers
+                        .intersects(KeyModifiers::CONTROL | KeyModifiers::ALT);
                     let gutter = app.line_number_gutter_width() as u16;
                     let inner_x = inner_content_area(app.content_area).x + gutter;
+                    let line_idx = app.line_idx_at(mouse.column, mouse.row);
                     let block_hit = if mouse.column >= inner_x {
                         let inner_col = mouse.column - inner_x;
-                        app.line_idx_at(mouse.column, mouse.row)
-                            .and_then(|line_idx| app.code_block_at(line_idx, inner_col))
+                        line_idx.and_then(|line_idx| app.code_block_at(line_idx, inner_col))
                     } else {
                         None
                     };
                     if let Some(block_idx) = block_hit {
                         app.exit_link_select_mode();
-                        app.code_select = Some(block_idx);
-                        app.copy_code_block_at(block_idx);
+                        let code_line = line_idx
+                            .filter(|_| line_gesture)
+                            .and_then(|line_idx| app.code_line_at(block_idx, line_idx));
+                        match code_line {
+                            Some(target) => app.copy_text_with(target, copy_link),
+                            None => {
+                                app.code_select = Some(block_idx);
+                                app.copy_code_block_at(block_idx);
+                            }
+                        }
                         app.last_click = None;
                         true
+                    } else if app.mode() == AppMode::Document
+                        && !line_idx.is_some_and(|idx| app.is_code_block_line(idx))
+                    {
+                        let target = if line_gesture {
+                            app.logical_line_at(mouse.column, mouse.row)
+                        } else {
+                            app.word_at(mouse.column, mouse.row)
+                        };
+                        match target {
+                            Some(target) => {
+                                app.copy_text_with(target, copy_link);
+                                app.last_click = None;
+                                true
+                            }
+                            None => false,
+                        }
                     } else {
                         false
                     }
