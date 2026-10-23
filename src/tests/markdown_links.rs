@@ -1,7 +1,7 @@
 use super::{test_assets, test_md_theme};
 use crate::markdown::{
-    display_width, highlight_line, parse_markdown, parse_markdown_with_width, resolve_syntax,
-    LinkId, LinkSpan,
+    display_width, highlight_line, highlight_matches_only, parse_markdown,
+    parse_markdown_with_width, resolve_syntax, LinkId, LinkSpan,
 };
 use crate::theme::app_theme;
 use ratatui::{
@@ -570,4 +570,22 @@ fn adversarial_table_fixture_preserves_visual_destination_order() {
             .count()
             > 1
     );
+}
+
+#[test]
+fn highlight_matches_only_bolds_matches_without_line_bg() {
+    let theme = test_md_theme();
+    let bold = Style::default().add_modifier(ratatui::style::Modifier::BOLD);
+    let line = Line::from(vec![Span::raw("say he"), Span::styled("llo wor", bold)]);
+    let result = highlight_matches_only(&line, &theme, "hello");
+    let text: Vec<_> = result.spans.iter().map(|s| s.content.as_ref()).collect();
+    assert_eq!(text, ["say ", "he", "llo", " wor"]);
+    assert_eq!(result.spans[0].style.bg, None);
+    assert_eq!(result.spans[1].style.bg, Some(theme.search_highlight_bg));
+    assert_eq!(result.spans[2].style.bg, Some(theme.search_highlight_bg));
+    assert_eq!(result.spans[3].style.bg, None);
+    assert!(result.spans[1]
+        .style
+        .add_modifier
+        .contains(ratatui::style::Modifier::BOLD));
 }

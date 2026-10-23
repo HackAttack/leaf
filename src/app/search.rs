@@ -56,7 +56,6 @@ impl App {
         self.search.idx
     }
 
-    #[cfg(test)]
     pub(crate) fn search_matches(&self) -> &[usize] {
         &self.search.matches
     }

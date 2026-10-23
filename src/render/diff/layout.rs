@@ -11,25 +11,30 @@ use ratatui::{
     Frame,
 };
 
-fn highlight_active_match(
+fn highlight_search_matches(
     app: &App,
     visible_lines: &mut [Line<'static>],
     scroll: usize,
     split: bool,
 ) {
-    let Some(row) = app.active_highlight_line() else {
-        return;
-    };
-    let Some(line) = row
-        .checked_sub(scroll)
-        .and_then(|rel| visible_lines.get_mut(rel))
-    else {
-        return;
-    };
-    let original = split.then(|| line.clone());
-    *line = crate::markdown::highlight_line(line, &app_theme().markdown, app.search_query());
-    if let Some(original) = original {
-        restore_blank_split_side(line, &original);
+    let active = app.active_highlight_line();
+    let theme = &app_theme().markdown;
+    for &row in app.search_matches() {
+        let Some(line) = row
+            .checked_sub(scroll)
+            .and_then(|rel| visible_lines.get_mut(rel))
+        else {
+            continue;
+        };
+        let original = split.then(|| line.clone());
+        *line = if Some(row) == active {
+            crate::markdown::highlight_line(line, theme, app.search_query())
+        } else {
+            crate::markdown::highlight_matches_only(line, theme, app.search_query())
+        };
+        if let Some(original) = original {
+            restore_blank_split_side(line, &original);
+        }
     }
 }
 
@@ -85,7 +90,7 @@ pub(crate) fn render_diff_panel(f: &mut Frame, app: &mut App, area: Rect) {
     let viewport_height = area.height as usize;
     let visible_end = (scroll + viewport_height).min(app.total());
     let mut visible_lines = app.visible_lines(scroll, visible_end).to_vec();
-    highlight_active_match(app, &mut visible_lines, scroll, false);
+    highlight_search_matches(app, &mut visible_lines, scroll, false);
 
     let active_file_idx = app.diff_current_file_from_scroll();
     if let Some(state) = app.diff() {
@@ -329,7 +334,7 @@ pub(super) fn render_split_lines_block(
     } else {
         Vec::new()
     };
-    highlight_active_match(app, &mut visible_lines, scroll, true);
+    highlight_search_matches(app, &mut visible_lines, scroll, true);
 
     let active_file_idx = app.diff_current_file_from_scroll();
     for (fi, &top_idx) in built.file_top_idx.iter().enumerate() {
