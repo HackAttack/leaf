@@ -18,10 +18,20 @@ use super::LastBlock;
 
 const MERMAID_CHROME_WIDTH: usize = 4;
 
+#[derive(Clone, Debug)]
+pub(crate) struct CodeRow {
+    pub(crate) line: usize,
+    pub(crate) start_col: usize,
+    pub(crate) end_col: usize,
+}
+
 pub(super) struct BlockLayout {
     pub(super) prefix_width: usize,
     pub(super) rendered_width: usize,
+    pub(super) code_rows: Vec<CodeRow>,
 }
+
+pub(crate) const BLOCKQUOTE_BAR: &str = "▏ ";
 
 pub(super) fn block_prefix(
     blockquote_depth: usize,
@@ -36,9 +46,9 @@ pub(super) fn block_prefix(
     let outer_style = Style::default().fg(outer_color);
     let inner_style = Style::default().fg(default_color);
     let mut spans = Vec::with_capacity(blockquote_depth);
-    spans.push(Span::styled("▏ ", outer_style));
+    spans.push(Span::styled(BLOCKQUOTE_BAR, outer_style));
     for _ in 1..blockquote_depth {
-        spans.push(Span::styled("▏ ", inner_style));
+        spans.push(Span::styled(BLOCKQUOTE_BAR, inner_style));
     }
     spans
 }
@@ -287,6 +297,7 @@ pub(super) fn push_code_block_lines(
     let plain_first_gutter = Span::styled(CODE_BLOCK_GUTTER, gutter_style);
     let plain_cont_gutter = Span::styled(CODE_BLOCK_GUTTER_WRAP, gutter_style);
 
+    let mut code_rows = Vec::new();
     for (i, code_line) in code_lines.into_iter().enumerate() {
         let (first_gutter, cont_gutter) = if show_line_numbers {
             let line_num = i + 1;
@@ -304,13 +315,22 @@ pub(super) fn push_code_block_lines(
         let mut cont_prefix = prefix.clone();
         cont_prefix.push(cont_gutter);
 
-        push_wrapped_code_lines(
+        let content_cols = push_wrapped_code_lines(
             lines,
             code_line.content_spans,
             first_prefix,
             cont_prefix,
             gutter_style,
             content_width,
+        );
+        code_rows.extend(
+            content_cols
+                .into_iter()
+                .map(|(start_col, end_col)| CodeRow {
+                    line: i,
+                    start_col,
+                    end_col,
+                }),
         );
     }
 
@@ -334,6 +354,7 @@ pub(super) fn push_code_block_lines(
     BlockLayout {
         prefix_width,
         rendered_width: inner_width + 2,
+        code_rows,
     }
 }
 
@@ -479,6 +500,7 @@ fn push_special_block_lines_with_prefix<F: Fn(&str) -> Vec<Span<'static>>>(
     BlockLayout {
         prefix_width,
         rendered_width: inner_width + 2,
+        code_rows: Vec::new(),
     }
 }
 

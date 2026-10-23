@@ -106,6 +106,12 @@ impl App {
         })
     }
 
+    pub(crate) fn is_code_block_line(&self, line_idx: usize) -> bool {
+        self.code_blocks
+            .iter()
+            .any(|b| (b.rendered_start..=b.rendered_end).contains(&line_idx))
+    }
+
     pub(crate) fn highlighted_code_block(&self) -> Option<usize> {
         self.code_select
     }

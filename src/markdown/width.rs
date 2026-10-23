@@ -121,6 +121,10 @@ pub(crate) fn rendered_span_width(span: &ratatui::text::Span<'_>) -> usize {
         .sum()
 }
 
+pub(crate) fn spans_width(spans: &[ratatui::text::Span<'_>]) -> usize {
+    spans.iter().map(rendered_span_width).sum()
+}
+
 pub(crate) fn display_width(text: &str) -> usize {
     let mut width = 0;
     let mut parts = text.split('\t').peekable();

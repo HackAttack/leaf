@@ -4,7 +4,7 @@ use crate::{
         App, AppMode, CodeBlockFlash, DiffFlash, DiffSource, EditorFlash, HistoryFlash, LinkFlash,
         PathFlash, WatchFlash, FLASH_DURATION_MS,
     },
-    markdown::{truncate_display_width, width::rendered_span_width},
+    markdown::{truncate_display_width, width::spans_width},
     theme::app_theme,
 };
 use ratatui::{
@@ -359,10 +359,6 @@ fn link_select_status(app: &App, destination: &str, bar_bg: Color) -> Vec<Span<'
     let mut left = brand;
     left.extend(status_filename_section(&destination));
     left
-}
-
-fn spans_width(spans: &[Span]) -> usize {
-    spans.iter().map(rendered_span_width).sum()
 }
 
 pub(crate) fn build_status_bar(app: &App, pct: u16) -> Vec<Span<'static>> {

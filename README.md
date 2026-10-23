@@ -399,12 +399,13 @@ leaf --theme rose-pine README.md
 | `J/K` / `U/D` | Navigate TOC | `Ctrl+P` | Open fuzzy picker |
 | `y/Y` / `c/C` | Focus code block | `Ctrl+H` | Open file history picker |
 | `x/X` | Focus link | `Ctrl+E` | Open in editor |
-| `Ctrl+L` / `:` | Go to line | `Ctrl+F` / `/` | Find |
-| `n` / `N` | Next / prev match | `Ctrl+Click` | Open link |
-| `w` | Toggle watch mode | `Double-Click` (link) | Copy link |
-| `r` | Force reload (watch mode) | `Double-Click` (code) | Copy code block |
-| `t` | Toggle TOC sidebar | `Shift+Drag` | Select text |
-| `q` | Quit | `Option+Drag` | Select text (iTerm2) |
+| `Ctrl+L` / `:` | Go to line | `Ctrl+Click` | Open link |
+| `Ctrl+F` / `/` | Find | `Double-Click` (text) | Copy word |
+| `n` / `N` | Next / prev match | `Double-Click` (link) | Copy link |
+| `w` | Toggle watch mode | `Double-Click` (code) | Copy code block |
+| `r` | Force reload (watch mode) | `Shift+Drag` | Select text |
+| `t` | Toggle TOC sidebar | `Option+Drag` | Select text (iTerm2) |
+| `q` | Quit | `Ctrl+Double-Click` | Copy line |
 
 ## Features
 
@@ -424,6 +425,7 @@ leaf --theme rose-pine README.md
 - **Mermaid diagrams** : *`mermaid` code blocks rendered as ASCII diagrams*.
 - **Clickable links** : *`Ctrl+Click` to open, double-click to copy, keyboard focus with `x/X`*.
 - **Code block interactions** : *Focus and copy with `y/Y` / `c/C`, or double-click on a block*.
+- **Text copy** : *Double-click to copy a word, `Ctrl+Double-Click` to copy a line (or a code line in a block)*.
 - **Mouse capture** : *`Shift+M` to toggle mouse capture and let the terminal handle selection*.
 - **Navigation** : *TOC sidebar, active section tracking, heading jumps, and search*.
 - **Terminal UX** : *Theme picker, help popup, file path popup, mouse and keyboard support*.

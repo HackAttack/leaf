@@ -64,8 +64,13 @@ pub(crate) use diff_preview::{fetch_before, reconstruct_after_from_hunks};
 mod flash;
 pub(crate) use flash::{
     CodeBlockFlash, DiffFlash, EditorFlash, HistoryFlash, LinkFlash, PathFlash, WatchFlash,
-    FLASH_DURATION_MS,
+    COPY_HIGHLIGHT_DURATION_MS, FLASH_DURATION_MS,
 };
+
+mod text_copy;
+#[cfg(test)]
+pub(crate) use text_copy::is_word_char;
+pub(crate) use text_copy::CopyRange;
 
 pub(crate) mod history;
 pub(crate) use history::load_history;
@@ -223,6 +228,7 @@ pub(crate) struct App {
     link_flash: Option<(LinkFlash, Instant)>,
     path_flash: Option<(PathFlash, Instant)>,
     pub(crate) last_click: Option<(u16, u16, Instant)>,
+    pub(super) copy_highlight: Option<(Vec<CopyRange>, Instant)>,
     pub(super) path_copy_flash: Option<(PathKind, bool, Instant)>,
     pub(super) path_popup_hover: Option<PathKind>,
     pub(crate) path_popup_rel_area: Option<Rect>,
@@ -412,6 +418,7 @@ impl App {
             link_flash: None,
             path_flash: None,
             last_click: None,
+            copy_highlight: None,
             path_copy_flash: None,
             path_popup_hover: None,
             path_popup_rel_area: None,
@@ -941,6 +948,7 @@ impl App {
 
     pub(crate) fn set_mode(&mut self, mode: AppMode) {
         self.mode = mode;
+        self.copy_highlight = None;
     }
 
     pub(crate) fn diff(&self) -> Option<&DiffState> {

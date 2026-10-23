@@ -47,14 +47,18 @@ use blocks::{
     trim_paragraph_gap_before_block, BlockLayout, CodeBlockRenderContext, EmbeddedBlockCtx,
     CODE_BLOCK_GUTTER,
 };
+pub(crate) use blocks::{CodeRow, BLOCKQUOTE_BAR};
 use fences::normalize_code_fences;
+pub(crate) use footnotes::is_footnote_number;
 use links::{emit_linked_line, LinkedSpan};
 use lists::{
     end_item, end_list, flush_list_item_spans, list_item_prefix, start_item, start_list, ItemState,
     ListKind,
 };
-#[cfg(test)]
-pub(crate) use lists::{TASK_CHECKED, TASK_CHECKED_ALT, TASK_UNCHECKED};
+pub(crate) use lists::{
+    is_ordered_marker, BULLET_DEEP, BULLET_L1, BULLET_L2, TASK_CHECKED, TASK_CHECKED_ALT,
+    TASK_UNCHECKED,
+};
 use markers::push_custom_marker_spans;
 use spans::{
     append_html_style_text, handle_html_tag_event, handle_inline_style_event, inline_text_style,
@@ -259,13 +263,16 @@ fn end_blockquote(
     }
 }
 
+pub(crate) const ALERT_ICONS: [&str; 4] = ["[i]", "[*]", "[!]", "[x]"];
+
 fn alert_icon_label(kind: BlockQuoteKind) -> (&'static str, &'static str) {
+    let [info, tip, warning, caution] = ALERT_ICONS;
     match kind {
-        BlockQuoteKind::Note => ("[i]", "Note"),
-        BlockQuoteKind::Tip => ("[*]", "Tip"),
-        BlockQuoteKind::Important => ("[!]", "Important"),
-        BlockQuoteKind::Warning => ("[!]", "Warning"),
-        BlockQuoteKind::Caution => ("[x]", "Caution"),
+        BlockQuoteKind::Note => (info, "Note"),
+        BlockQuoteKind::Tip => (tip, "Tip"),
+        BlockQuoteKind::Important => (warning, "Important"),
+        BlockQuoteKind::Warning => (warning, "Warning"),
+        BlockQuoteKind::Caution => (caution, "Caution"),
     }
 }
 
@@ -342,6 +349,7 @@ pub(crate) struct CodeBlockInfo {
     pub(crate) rendered_offset: usize,
     pub(crate) rendered_width: usize,
     pub(crate) raw_content: String,
+    pub(crate) code_rows: Vec<CodeRow>,
 }
 
 fn record_code_block(
@@ -360,6 +368,7 @@ fn record_code_block(
         rendered_offset: layout.prefix_width,
         rendered_width: layout.rendered_width,
         raw_content,
+        code_rows: layout.code_rows,
     });
 }
 

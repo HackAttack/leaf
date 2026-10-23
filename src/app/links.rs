@@ -56,7 +56,7 @@ impl App {
         self.screen_geometry.row_lines.get(row).copied()
     }
 
-    fn screen_cell(&self, col: u16, row: u16) -> Option<(usize, usize)> {
+    pub(super) fn screen_cell(&self, col: u16, row: u16) -> Option<(usize, usize)> {
         let area = crate::render::inner_content_area(self.content_area);
         if !area.contains(ratatui::layout::Position::new(col, row)) {
             return None;

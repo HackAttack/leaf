@@ -1,5 +1,5 @@
 use super::links::{emit_linked_line, LinkSpan, LinkedSpan};
-use super::width::{display_width, iter_cluster_widths};
+use super::width::{display_width, iter_cluster_widths, spans_width};
 use ratatui::{
     style::Style,
     text::{Line, Span},
@@ -212,7 +212,8 @@ pub(super) fn push_wrapped_code_lines(
     continuation_prefix: Vec<Span<'static>>,
     suffix_style: Style,
     available_content_width: usize,
-) {
+) -> Vec<(usize, usize)> {
+    let prefix_width = |prefix: &[Span<'static>]| -> usize { spans_width(prefix) + 1 };
     let mut clusters: Vec<(String, usize, Style)> = Vec::new();
     for span in &content_spans {
         let style = span.style;
@@ -222,15 +223,17 @@ pub(super) fn push_wrapped_code_lines(
     }
 
     if clusters.is_empty() {
+        let start = prefix_width(&first_prefix);
         let pad = " ".repeat(available_content_width + 1);
         let mut row = first_prefix;
         row.push(Span::raw(format!(" {pad}")));
         row.push(Span::styled("│", suffix_style));
         lines.push(Line::from(row));
-        return;
+        return vec![(start, start)];
     }
 
     let max_w = available_content_width.max(1);
+    let mut content_cols = Vec::new();
     let mut pos = 0;
     let mut first_prefix = Some(first_prefix);
 
@@ -251,6 +254,8 @@ pub(super) fn push_wrapped_code_lines(
             pos += 1;
         }
 
+        let start = prefix_width(&prefix);
+        content_cols.push((start, start + row_width));
         let mut row = prefix;
         row.push(Span::raw(" "));
 
@@ -279,4 +284,5 @@ pub(super) fn push_wrapped_code_lines(
         row.push(Span::styled("│", suffix_style));
         lines.push(Line::from(row));
     }
+    content_cols
 }

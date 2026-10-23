@@ -15,6 +15,18 @@ use super::LastBlock;
 pub(crate) const TASK_CHECKED: &str = "☑ ";
 pub(crate) const TASK_CHECKED_ALT: &str = "☒ ";
 pub(crate) const TASK_UNCHECKED: &str = "☐ ";
+pub(crate) const BULLET_L1: &str = "• ";
+pub(crate) const BULLET_L2: &str = "◦ ";
+pub(crate) const BULLET_DEEP: &str = "▸ ";
+
+fn ordered_marker(n: u64) -> String {
+    format!("{n}. ")
+}
+
+pub(crate) fn is_ordered_marker(text: &str) -> bool {
+    text.strip_suffix(". ")
+        .is_some_and(|n| !n.is_empty() && n.bytes().all(|b| b.is_ascii_digit()))
+}
 
 #[derive(Clone, Copy)]
 pub(super) enum ListKind {
@@ -62,11 +74,11 @@ pub(super) fn list_item_prefix(
             Some(false) => TASK_UNCHECKED.into(),
             None => match list_stack.last().copied().unwrap_or(ListKind::Unordered) {
                 ListKind::Unordered => match depth {
-                    1 => "• ".into(),
-                    2 => "◦ ".into(),
-                    _ => "▸ ".into(),
+                    1 => BULLET_L1.into(),
+                    2 => BULLET_L2.into(),
+                    _ => BULLET_DEEP.into(),
                 },
-                ListKind::Ordered(n) => format!("{n}. ").into(),
+                ListKind::Ordered(n) => ordered_marker(n).into(),
             },
         };
         item.continuation_indent = 2 * depth.saturating_sub(1) + display_width(&marker);

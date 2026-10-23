@@ -16,6 +16,7 @@ mod app_code_blocks;
 mod app_link_selection;
 mod app_mode;
 mod app_mode_diff_integration;
+mod app_text_copy;
 mod common;
 mod completions;
 mod config;

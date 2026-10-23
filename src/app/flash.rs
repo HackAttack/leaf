@@ -1,9 +1,10 @@
-use super::App;
+use super::{App, CopyRange};
 use crate::markdown::hash_str;
 use crate::picker_width as pw;
 use std::time::Instant;
 
 pub(crate) const FLASH_DURATION_MS: u64 = 1500;
+pub(crate) const COPY_HIGHLIGHT_DURATION_MS: u64 = 1500;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum EditorFlash {
@@ -161,6 +162,18 @@ impl App {
 
     pub(crate) fn clear_link_flash(&mut self) {
         self.link_flash = None;
+    }
+
+    pub(crate) fn set_copy_highlight(&mut self, ranges: Vec<CopyRange>) {
+        self.copy_highlight = Some((ranges, Instant::now()));
+    }
+
+    pub(crate) fn copy_highlight(&self) -> Option<&(Vec<CopyRange>, Instant)> {
+        self.copy_highlight.as_ref()
+    }
+
+    pub(crate) fn clear_copy_highlight(&mut self) {
+        self.copy_highlight = None;
     }
 
     pub(crate) fn set_path_flash(&mut self, flash: PathFlash) {
