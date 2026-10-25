@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- next-version -->
 
+## [[1.29.2](https://github.com/RivoLink/leaf/releases/tag/1.29.2)] - 2026-10-25
+
+### Fixed
+
+- cargo audit tokio warning ([#350](https://github.com/RivoLink/leaf/pull/350))
+- clipboard without display ([#347](https://github.com/RivoLink/leaf/pull/347))
+- cargo audit webpki error ([#346](https://github.com/RivoLink/leaf/pull/346))
+- clicks on drawn rows ([#338](https://github.com/RivoLink/leaf/pull/338))
+
+### Changed
+
+- highlight search matches ([#349](https://github.com/RivoLink/leaf/pull/349))
+- double-click text copy ([#348](https://github.com/RivoLink/leaf/pull/348))
+- keyboard link selection ([#340](https://github.com/RivoLink/leaf/pull/340))
+- improve git diff viewer ([#339](https://github.com/RivoLink/leaf/pull/339))
+
 ## [[1.29.1](https://github.com/RivoLink/leaf/releases/tag/1.29.1)] - 2026-10-14
 
 ### Docs
