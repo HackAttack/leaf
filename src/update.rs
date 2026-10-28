@@ -1,12 +1,15 @@
 use anyhow::{bail, Context, Result};
-use reqwest::blocking::Client;
 use semver::Version;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::{
-    fs,
+    fs, io,
     path::{Path, PathBuf},
     time::Duration,
+};
+use ureq::{
+    http::{header, StatusCode},
+    Agent,
 };
 
 const REPOS: &[&str] = &["RivoLink/leaf", "leaf-mg/leaf"];
@@ -115,21 +118,18 @@ fn fetch_latest_release(asset_name: &str) -> Result<GithubRelease> {
 }
 
 fn fetch_release_from_api(repo: &str) -> Result<GithubRelease> {
-    let client = http_client()?;
-
-    let response = client
+    let mut response = http_agent()
         .get(format!(
             "https://api.github.com/repos/{repo}/releases/latest"
         ))
-        .header(reqwest::header::USER_AGENT, "leaf-updater")
-        .send()
+        .call()
         .context("Cannot reach GitHub releases API")?;
 
     let status = response.status();
-    if status == reqwest::StatusCode::FORBIDDEN {
+    if status == StatusCode::FORBIDDEN {
         bail!("GitHub API request was forbidden or rate-limited");
     }
-    if status == reqwest::StatusCode::NOT_FOUND {
+    if status == StatusCode::NOT_FOUND {
         bail!("Latest GitHub release was not found");
     }
     if !status.is_success() {
@@ -137,17 +137,18 @@ fn fetch_release_from_api(repo: &str) -> Result<GithubRelease> {
     }
 
     response
-        .json::<GithubRelease>()
+        .body_mut()
+        .read_json::<GithubRelease>()
         .context("Cannot parse GitHub release metadata")
 }
 
 fn fetch_release_from_redirect(repo: &str, asset_name: &str) -> Result<GithubRelease> {
-    let client = http_client_no_redirect()?;
-
-    let response = client
+    let response = http_agent()
         .head(format!("https://github.com/{repo}/releases/latest"))
-        .header(reqwest::header::USER_AGENT, "leaf-updater")
-        .send()
+        .config()
+        .max_redirects(0)
+        .build()
+        .call()
         .context("Cannot reach GitHub releases page")?;
 
     let status = response.status();
@@ -157,7 +158,7 @@ fn fetch_release_from_redirect(repo: &str, asset_name: &str) -> Result<GithubRel
 
     let location = response
         .headers()
-        .get(reqwest::header::LOCATION)
+        .get(header::LOCATION)
         .and_then(|v| v.to_str().ok())
         .ok_or_else(|| anyhow::anyhow!("GitHub releases redirect missing Location header"))?;
 
@@ -237,18 +238,16 @@ fn normalize_version_tag(version: &str) -> &str {
 fn download_asset(url: &str, destination: &Path) -> Result<()> {
     cleanup_file_if_exists(destination);
     let _cleanup = TempFileGuard::new(destination.to_path_buf());
-    let client = http_client()?;
-    let mut response = client
+    let mut response = http_agent()
         .get(url)
-        .header(reqwest::header::USER_AGENT, "leaf-updater")
-        .send()
+        .call()
         .with_context(|| format!("Cannot download release asset: {url}"))?;
 
-    let expected_len = validate_download_response(response.status(), response.content_length())?;
+    let expected_len =
+        validate_download_response(response.status(), response.body().content_length())?;
     let mut file = fs::File::create(destination)
         .with_context(|| format!("Cannot create temporary file: {}", destination.display()))?;
-    let copied = response
-        .copy_to(&mut file)
+    let copied = io::copy(&mut response.body_mut().as_reader(), &mut file)
         .with_context(|| format!("Cannot write downloaded asset: {}", destination.display()))?;
     validate_download_size(expected_len, copied)?;
     file.sync_all()
@@ -258,44 +257,35 @@ fn download_asset(url: &str, destination: &Path) -> Result<()> {
 }
 
 fn download_text_asset(url: &str) -> Result<String> {
-    let client = http_client()?;
-    let response = client
+    let mut response = http_agent()
         .get(url)
-        .header(reqwest::header::USER_AGENT, "leaf-updater")
-        .send()
+        .call()
         .with_context(|| format!("Cannot download release metadata asset: {url}"))?;
 
-    validate_download_response(response.status(), response.content_length())?;
+    validate_download_response(response.status(), response.body().content_length())?;
     response
-        .text()
+        .body_mut()
+        .read_to_string()
         .with_context(|| format!("Cannot read release metadata asset: {url}"))
 }
 
-fn http_client() -> Result<Client> {
-    let client = Client::builder()
-        .timeout(HTTP_TIMEOUT)
+fn http_agent() -> Agent {
+    Agent::config_builder()
+        .timeout_global(Some(HTTP_TIMEOUT))
+        .http_status_as_error(false)
+        .user_agent("leaf-updater")
         .build()
-        .context("Cannot initialize HTTP client")?;
-    Ok(client)
-}
-
-fn http_client_no_redirect() -> Result<Client> {
-    let client = Client::builder()
-        .timeout(HTTP_TIMEOUT)
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .context("Cannot initialize HTTP client")?;
-    Ok(client)
+        .into()
 }
 
 fn validate_download_response(
-    status: reqwest::StatusCode,
+    status: StatusCode,
     content_length: Option<u64>,
 ) -> Result<Option<u64>> {
-    if status == reqwest::StatusCode::FORBIDDEN {
+    if status == StatusCode::FORBIDDEN {
         bail!("Release asset download was forbidden or rate-limited");
     }
-    if status == reqwest::StatusCode::NOT_FOUND {
+    if status == StatusCode::NOT_FOUND {
         bail!("Release asset was not found");
     }
     if !status.is_success() {
