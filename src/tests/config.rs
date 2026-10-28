@@ -296,30 +296,35 @@ fn config_path_returns_some() {
 
 #[test]
 fn resolve_tab_title_length_n_none_returns_default_minus_one() {
+    let _guard = super::write_theme_test_state();
     std::env::remove_var("LEAF_TAB_TITLE_LENGTH");
     assert_eq!(test_resolve_tab_title_length_n(None), Some(-1));
 }
 
 #[test]
 fn resolve_tab_title_length_n_config_minus_one() {
+    let _guard = super::write_theme_test_state();
     std::env::remove_var("LEAF_TAB_TITLE_LENGTH");
     assert_eq!(test_resolve_tab_title_length_n(Some(-1)), Some(-1));
 }
 
 #[test]
 fn resolve_tab_title_length_n_config_valid_value() {
+    let _guard = super::write_theme_test_state();
     std::env::remove_var("LEAF_TAB_TITLE_LENGTH");
     assert_eq!(test_resolve_tab_title_length_n(Some(30)), Some(30));
 }
 
 #[test]
 fn resolve_tab_title_length_n_config_invalid_low_returns_none() {
+    let _guard = super::write_theme_test_state();
     std::env::remove_var("LEAF_TAB_TITLE_LENGTH");
     assert_eq!(test_resolve_tab_title_length_n(Some(5)), None);
 }
 
 #[test]
 fn resolve_tab_title_length_n_env_override_wins() {
+    let _guard = super::write_theme_test_state();
     std::env::set_var("LEAF_TAB_TITLE_LENGTH", "25");
     let result = test_resolve_tab_title_length_n(Some(50));
     std::env::remove_var("LEAF_TAB_TITLE_LENGTH");
@@ -328,6 +333,7 @@ fn resolve_tab_title_length_n_env_override_wins() {
 
 #[test]
 fn resolve_tab_title_length_n_env_invalid_falls_back_to_config() {
+    let _guard = super::write_theme_test_state();
     std::env::set_var("LEAF_TAB_TITLE_LENGTH", "not-a-number");
     let result = test_resolve_tab_title_length_n(Some(30));
     std::env::remove_var("LEAF_TAB_TITLE_LENGTH");

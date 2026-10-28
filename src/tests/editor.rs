@@ -204,7 +204,7 @@ fn try_new_tab_command_windows_terminal_non_wsl_returns_spawn() {
 
 #[test]
 fn try_new_tab_command_kitty_returns_run_and_check_with_or_without_listen_socket() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let previous = std::env::var_os("KITTY_LISTEN_ON");
     std::env::remove_var("KITTY_LISTEN_ON");
     let without_socket = try_new_tab_command(
@@ -393,7 +393,7 @@ fn new_tab_command_apple_terminal_file_with_spaces() {
 
 #[test]
 fn resolve_editor_cli_takes_priority() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::remove_var("EDITOR");
     let result = resolve_editor(Some("vim"), None);
@@ -402,7 +402,7 @@ fn resolve_editor_cli_takes_priority() {
 
 #[test]
 fn resolve_editor_fallback_is_not_empty() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::remove_var("EDITOR");
     let result = resolve_editor(None, None);
@@ -411,7 +411,7 @@ fn resolve_editor_fallback_is_not_empty() {
 
 #[test]
 fn resolve_editor_config_takes_priority_over_fallback() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::remove_var("EDITOR");
     let result = resolve_editor(None, Some("hx"));
@@ -420,7 +420,7 @@ fn resolve_editor_config_takes_priority_over_fallback() {
 
 #[test]
 fn resolve_editor_env_editor_used_when_others_absent() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::set_var("EDITOR", "vim");
     let result = resolve_editor(None, None);
@@ -430,7 +430,7 @@ fn resolve_editor_env_editor_used_when_others_absent() {
 
 #[test]
 fn resolve_editor_config_takes_priority_over_env_editor() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::set_var("EDITOR", "vim");
     let result = resolve_editor(None, Some("hx"));
@@ -440,7 +440,7 @@ fn resolve_editor_config_takes_priority_over_env_editor() {
 
 #[test]
 fn resolve_editor_env_editor_empty_falls_back_to_platform() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::set_var("EDITOR", "");
     let result = resolve_editor(None, None);
@@ -455,7 +455,7 @@ fn resolve_editor_env_editor_empty_falls_back_to_platform() {
 
 #[test]
 fn resolve_editor_leaf_editor_takes_priority_over_env_editor() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::set_var("LEAF_EDITOR", "nvim");
     std::env::set_var("EDITOR", "vim");
     let result = resolve_editor(None, None);
@@ -466,7 +466,7 @@ fn resolve_editor_leaf_editor_takes_priority_over_env_editor() {
 
 #[test]
 fn resolve_editor_cli_takes_priority_over_env_editor() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_EDITOR");
     std::env::set_var("EDITOR", "vim");
     let result = resolve_editor(Some("code"), None);

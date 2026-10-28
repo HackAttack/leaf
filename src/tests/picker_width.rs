@@ -119,7 +119,7 @@ fn parse_picker_width_deserialize_string_ok() {
 #[test]
 fn resolve_file_picker_width_defaults_when_none() {
     // Note: env var is not set in test env by default.
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_FILE_PICKER_WIDTH");
     let result = crate::resolve_file_picker_width(None);
     assert_eq!(result, DEFAULT_PICKER_WIDTH);
@@ -127,7 +127,7 @@ fn resolve_file_picker_width_defaults_when_none() {
 
 #[test]
 fn resolve_file_picker_width_returns_config_when_valid() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_FILE_PICKER_WIDTH");
     let result = crate::resolve_file_picker_width(Some(PickerWidthSpec::Percent(60)));
     assert_eq!(result, PickerWidthSpec::Percent(60));
@@ -135,7 +135,7 @@ fn resolve_file_picker_width_returns_config_when_valid() {
 
 #[test]
 fn resolve_file_picker_width_env_overrides_config() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::set_var("LEAF_FILE_PICKER_WIDTH", "42cells");
     let result = crate::resolve_file_picker_width(Some(PickerWidthSpec::Percent(60)));
     std::env::remove_var("LEAF_FILE_PICKER_WIDTH");
@@ -144,7 +144,7 @@ fn resolve_file_picker_width_env_overrides_config() {
 
 #[test]
 fn resolve_file_picker_width_falls_back_when_env_invalid() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::set_var("LEAF_FILE_PICKER_WIDTH", "garbage");
     let result = crate::resolve_file_picker_width(Some(PickerWidthSpec::Percent(60)));
     std::env::remove_var("LEAF_FILE_PICKER_WIDTH");
@@ -167,7 +167,7 @@ fn parse_toc_filelist_width_deserialize_string_ok() {
 
 #[test]
 fn resolve_toc_filelist_width_defaults_when_none() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_TOC_FILELIST_WIDTH");
     let result = crate::resolve_toc_filelist_width(None);
     assert_eq!(result, crate::picker_width::DEFAULT_TOC_FILELIST_WIDTH);
@@ -175,7 +175,7 @@ fn resolve_toc_filelist_width_defaults_when_none() {
 
 #[test]
 fn resolve_toc_filelist_width_returns_config_when_valid() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::remove_var("LEAF_TOC_FILELIST_WIDTH");
     let result = crate::resolve_toc_filelist_width(Some(PickerWidthSpec::Cells(35)));
     assert_eq!(result, PickerWidthSpec::Cells(35));
@@ -183,7 +183,7 @@ fn resolve_toc_filelist_width_returns_config_when_valid() {
 
 #[test]
 fn resolve_toc_filelist_width_env_overrides_config() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     std::env::set_var("LEAF_TOC_FILELIST_WIDTH", "50cells");
     let result = crate::resolve_toc_filelist_width(Some(PickerWidthSpec::Cells(30)));
     std::env::remove_var("LEAF_TOC_FILELIST_WIDTH");

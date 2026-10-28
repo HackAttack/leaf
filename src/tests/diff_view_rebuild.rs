@@ -1,4 +1,4 @@
-use super::{lock_theme_test_state, test_assets, unique_temp_dir};
+use super::{test_assets, unique_temp_dir, write_theme_test_state};
 use crate::app::{App, AppConfig, DiffSpec};
 use crate::diff::{parse_unified_diff, DiffLayout};
 use crate::theme::{current_theme_selection, set_theme_preset, set_theme_selection, ThemePreset};
@@ -53,7 +53,7 @@ fn diff_app(src: &str, filepath: Option<std::path::PathBuf>) -> App {
 
 #[test]
 fn theme_preview_in_diff_mode_keeps_diff_lines() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     set_theme_preset(ThemePreset::OceanDark);
     let (ss, _) = test_assets();
@@ -82,7 +82,7 @@ fn theme_preview_in_diff_mode_keeps_diff_lines() {
 
 #[test]
 fn theme_preview_and_confirm_in_diff_mode_rebuild_diff_view() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     set_theme_preset(ThemePreset::OceanDark);
     let (ss, _) = test_assets();
@@ -202,7 +202,7 @@ fn dragging_the_tree_border_on_a_narrow_terminal_does_not_panic() {
 
 #[test]
 fn theme_preview_in_diff_mode_recolors_rows() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     set_theme_preset(ThemePreset::OceanDark);
     let (ss, _) = test_assets();
