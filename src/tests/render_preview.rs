@@ -164,6 +164,7 @@ fn preview_submodule_single_column() {
 
 #[test]
 fn preview_mode_only_before_shows_content() {
+    let _guard = crate::tests::lock_theme_test_state();
     use crate::app::{build_preview_pair, DiffSpec};
     use crate::diff::parse_unified_diff;
 

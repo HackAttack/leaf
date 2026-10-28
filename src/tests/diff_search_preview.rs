@@ -116,7 +116,7 @@ fn search_is_disabled_in_preview() {
 
 #[test]
 fn patch_preview_never_reads_local_files() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-patch-preview") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -148,7 +148,7 @@ fn reconstruction_rejects_a_mismatching_source() {
 
 #[test]
 fn working_preview_reads_files_from_the_repo_root() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-preview-subdir") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -174,7 +174,7 @@ fn working_preview_reads_files_from_the_repo_root() {
 
 #[test]
 fn preview_opens_near_the_first_change() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-preview-first-change") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -255,7 +255,7 @@ fn binary_preview_is_notes_only() {
 
 #[test]
 fn refresh_reruns_git_diff() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-diff-refresh") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -337,7 +337,7 @@ fn zero_context_insertion_goes_after_its_line() {
 
 #[test]
 fn refresh_keeps_the_current_file_and_layout() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-refresh-position") else {
         eprintln!("git/scratch unavailable; skipping");
         return;

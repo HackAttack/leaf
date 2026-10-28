@@ -1,4 +1,4 @@
-use super::{lock_theme_test_state, test_assets, test_md_theme};
+use super::{test_assets, test_md_theme, write_theme_test_state};
 use crate::app::{App, AppConfig};
 use crate::markdown::parse_markdown;
 use crate::theme::{
@@ -91,7 +91,7 @@ fn validate_theme_syntax_warns_for_unknown_syntect_theme() {
 
 #[test]
 fn set_theme_selection_applies_custom_theme() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     let custom: CustomThemeConfig = toml::from_str(
         r##"[markdown]
@@ -154,7 +154,7 @@ fn theme_presets_are_in_alphabetical_order() {
 
 #[test]
 fn theme_picker_restores_original_preset_on_escape() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let (ss, theme) = test_assets();
     let ts = ThemeSet::load_defaults();
     let (lines, toc, _, _) =
@@ -190,7 +190,7 @@ fn theme_picker_restores_original_preset_on_escape() {
 
 #[test]
 fn theme_picker_caches_previewed_themes_for_reuse() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let (ss, theme) = test_assets();
     let ts = ThemeSet::load_defaults();
     let (lines, toc, _, _) = parse_markdown(
@@ -231,7 +231,7 @@ fn theme_picker_caches_previewed_themes_for_reuse() {
 
 #[test]
 fn theme_picker_restores_custom_theme_on_escape() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     let custom: CustomThemeConfig = toml::from_str(
         r##"
@@ -281,7 +281,7 @@ heading_1 = "#010203"
 
 #[test]
 fn theme_picker_cached_previews_keep_full_parse_metadata() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     set_theme_preset(ThemePreset::Forest);
     let source = "[A](https://a.test)\n\n```rust\nlet x = 1;\n```\n";
@@ -341,7 +341,7 @@ fn theme_picker_cached_previews_keep_full_parse_metadata() {
 
 #[test]
 fn resizing_during_theme_preview_reparses_original_theme_at_new_width() {
-    let _guard = lock_theme_test_state();
+    let _guard = write_theme_test_state();
     let original = current_theme_selection();
     set_theme_preset(ThemePreset::Forest);
     let source = "This paragraph is intentionally long so its rendered line count changes when the terminal is resized to a much narrower width.\n\n[A](https://a.test)\n\n```rust\nlet value = \"this code line also wraps when the available width is reduced\";\n```\n";

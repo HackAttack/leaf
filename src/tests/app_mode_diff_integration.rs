@@ -38,7 +38,7 @@ fn flatten_lines(lines: &[Line<'static>]) -> String {
 
 #[test]
 fn build_preview_pair_before_and_after_are_distinct_for_modified_file() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-preview-test") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -124,7 +124,7 @@ fn build_preview_pair_before_and_after_are_distinct_for_modified_file() {
 
 #[test]
 fn build_preview_pair_markdown_before_and_after_are_distinct() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-preview-md-test") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -227,7 +227,7 @@ fn build_preview_pair_markdown_before_and_after_are_distinct() {
 
 #[test]
 fn preview_panel_short_column_stays_pinned_on_deep_scroll() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-preview-scroll-test") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -296,7 +296,7 @@ fn preview_panel_short_column_stays_pinned_on_deep_scroll() {
 
 #[test]
 fn fetch_before_prefers_index_blob_over_head() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-fetch-before") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -331,7 +331,7 @@ fn fetch_before_prefers_index_blob_over_head() {
 
 #[test]
 fn git_diff_subprocess_ignores_color_and_prefix_config() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-git-diff-config") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -362,7 +362,7 @@ fn git_diff_subprocess_ignores_color_and_prefix_config() {
 
 #[test]
 fn git_diff_subprocess_ignores_relative_config() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-git-diff-relative") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -390,7 +390,7 @@ fn git_diff_subprocess_ignores_relative_config() {
 
 #[test]
 fn git_diff_subprocess_compares_two_revisions_with_paths() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-git-diff-revs") else {
         eprintln!("git/scratch unavailable; skipping");
         return;
@@ -423,7 +423,7 @@ fn git_diff_subprocess_compares_two_revisions_with_paths() {
 
 #[test]
 fn existing_path_wins_over_a_revision_of_the_same_name() {
-    let _guard = crate::tests::THEME_TEST_MUTEX.lock().unwrap();
+    let _guard = crate::tests::write_theme_test_state();
     let Some(repo) = ScratchRepo::new("leaf-rev-or-path") else {
         eprintln!("git/scratch unavailable; skipping");
         return;

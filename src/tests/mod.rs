@@ -3,7 +3,7 @@ use ratatui::backend::TestBackend;
 use ratatui::{text::Line, widgets::Paragraph, Terminal};
 use std::{
     path::PathBuf,
-    sync::{Mutex, MutexGuard},
+    sync::{RwLock, RwLockReadGuard, RwLockWriteGuard},
     time::{SystemTime, UNIX_EPOCH},
 };
 use syntect::{
@@ -59,7 +59,7 @@ mod toc;
 mod update;
 mod wrapping;
 
-pub(super) static THEME_TEST_MUTEX: Mutex<()> = Mutex::new(());
+pub(super) static THEME_TEST_LOCK: RwLock<()> = RwLock::new(());
 
 pub(super) fn test_assets() -> (SyntaxSet, Theme) {
     let ss = SyntaxSet::load_defaults_newlines();
@@ -112,8 +112,12 @@ pub(super) fn rendered_non_empty_lines(lines: &[Line<'static>]) -> Vec<String> {
         .collect()
 }
 
-pub(super) fn lock_theme_test_state() -> MutexGuard<'static, ()> {
-    THEME_TEST_MUTEX.lock().unwrap()
+pub(super) fn lock_theme_test_state() -> RwLockReadGuard<'static, ()> {
+    THEME_TEST_LOCK.read().unwrap()
+}
+
+pub(super) fn write_theme_test_state() -> RwLockWriteGuard<'static, ()> {
+    THEME_TEST_LOCK.write().unwrap()
 }
 
 pub(super) fn unique_temp_dir(prefix: &str) -> PathBuf {
